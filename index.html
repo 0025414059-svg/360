@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Xem Video 360 Độ</title>
+    <title>App Xem Video 360 Của Tôi</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <style>
-        /* Giao diện nút yêu cầu quyền cảm biến trên iOS */
+        /* Giao diện nút yêu cầu quyền cảm biến */
         #permission-btn {
             position: fixed;
             top: 50%;
@@ -14,15 +14,15 @@
             transform: translate(-50%, -50%);
             z-index: 9999;
             padding: 15px 30px;
-            background-color: #007bff;
+            background-color: #28a745;
             color: white;
             border: none;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 18px;
+            font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-        /* Ẩn nút khi đã cấp quyền */
         .hidden {
             display: none !important;
         }
@@ -30,7 +30,7 @@
 </head>
 <body>
 
-    <button id="permission-btn">Kích hoạt cảm biến xoay (Gyroscope)</button>
+    <button id="permission-btn">Mở Video & Bật Cảm Biến Xoay</button>
 
     <a-scene>
         <a-assets>
@@ -54,33 +54,34 @@
         const btn = document.getElementById('permission-btn');
         const video = document.getElementById('video360');
 
-        // Hàm khởi chạy video sau khi có tương tác người dùng
         function startApp() {
             video.play();
+            // Bỏ chế độ tắt tiếng sau khi người dùng đã tương tác bấm nút
+            video.muted = false; 
             btn.classList.add('hidden');
         }
 
         btn.addEventListener('click', function() {
-            // Kiểm tra nếu là thiết bị iOS (yêu cầu xin quyền DeviceOrientation)
+            // Xin quyền cảm biến xoay cho iOS (iPhone)
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                 DeviceOrientationEvent.requestPermission()
                     .then(permissionState => {
                         if (permissionState === 'granted') {
                             startApp();
                         } else {
-                            alert('Bạn cần cấp quyền cảm biến để xoay được video!');
+                            alert('Bạn cần cho phép quyền cảm biến để xoay được video!');
                         }
                     })
                     .catch(console.error);
             } else {
-                // Đối với Android hoặc PC không cần xin quyền đặc biệt
+                // Android hoặc Máy tính thì chạy luôn
                 startApp();
             }
         });
 
-        // Tự động ẩn nút nếu trên PC (vì PC không có cảm biến gyro)
+        // Đổi chữ trên nút nếu là PC
         if (!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-            btn.textContent = "Click để phát Video (Trình duyệt PC)";
+            btn.textContent = "Click để xem Video (Trình duyệt PC)";
         }
     </script>
 </body>
