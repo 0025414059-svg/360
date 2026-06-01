@@ -3,45 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Xem Video 360 Của Tôi</title>
+    <title>App Xem Video 360 Tự Động</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <style>
-        /* Giao diện nút yêu cầu quyền cảm biến */
-        #permission-btn {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 9999;
-            padding: 15px 30px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        .hidden {
-            display: none !important;
+        /* Xóa bỏ hoàn toàn CSS của nút bấm cũ để màn hình sạch sẽ */
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
         }
     </style>
 </head>
 <body>
 
-    <button id="permission-btn">Mở Video & Bật Cảm Biến Xoay</button>
-
-    <a-scene>
+    <a-scene vr-mode-ui="enabled: false">
         <a-assets>
             <video id="video360" 
                    src="Lion-360.mp4" 
-                   autoplay 
-                   loop 
+                   autoplay="true" 
+                   loop="true" 
                    crossorigin="anonymous" 
-                   playsinline 
-                   webkit-playsinline 
-                   muted>
+                   playsinline="true" 
+                   webkit-playsinline="true" 
+                   muted="true">
             </video>
         </a-assets>
 
@@ -51,38 +36,42 @@
     </a-scene>
 
     <script>
-        const btn = document.getElementById('permission-btn');
         const video = document.getElementById('video360');
 
-        function startApp() {
-            video.play();
-            // Bỏ chế độ tắt tiếng sau khi người dùng đã tương tác bấm nút
-            video.muted = false; 
-            btn.classList.add('hidden');
-        }
+        // Hàm kích hoạt toàn bộ tính năng (Âm thanh + Cảm biến iPhone)
+        function activateFullExperience() {
+            // Bật tiếng video
+            if (video.muted) {
+                video.muted = false;
+                video.play().catch(function(error) {
+                    console.log("Chờ tương tác tiếp theo để phát nhạc");
+                });
+            }
 
-        btn.addEventListener('click', function() {
-            // Xin quyền cảm biến xoay cho iOS (iPhone)
+            // Kích hoạt cảm biến xoay nếu là iPhone (iOS)
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                 DeviceOrientationEvent.requestPermission()
                     .then(permissionState => {
                         if (permissionState === 'granted') {
-                            startApp();
-                        } else {
-                            alert('Bạn cần cho phép quyền cảm biến để xoay được video!');
+                            // Cảm biến đã được bật thành công
                         }
                     })
                     .catch(console.error);
-            } else {
-                // Android hoặc Máy tính thì chạy luôn
-                startApp();
             }
-        });
 
-        // Đổi chữ trên nút nếu là PC
-        if (!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-            btn.textContent = "Click để xem Video (Trình duyệt PC)";
+            // Sau khi người dùng chạm lần đầu tiên, gỡ bỏ sự kiện này để không lặp lại
+            window.removeEventListener('click', activateFullExperience);
+            window.removeEventListener('touchstart', activateFullExperience);
         }
+
+        // Lắng nghe thao tác chạm vào màn hình của người dùng để bật full tính năng
+        window.addEventListener('click', activateFullExperience);
+        window.addEventListener('touchstart', activateFullExperience);
+
+        // Cố gắng ép video chạy ngay khi vừa load xong trang (chạy ẩn/tắt tiếng)
+        document.addEventListener("DOMContentLoaded", function() {
+            video.play();
+        });
     </script>
 </body>
 </html>
